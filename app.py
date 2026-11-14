@@ -351,7 +351,7 @@ if "Klasifikasi" in menu:
             )
             st.info("💡 Belum ada gambar yang diunggah. Silakan pilih file gambar daun padi di atas.")
         else:
-            st.image(st.session_state["saved_image"], caption="Preview Daun Padi", use_column_width=True)
+            st.image(st.session_state["saved_image"], caption="Preview Daun Padi", width="stretch")
             st.markdown("<br>", unsafe_allow_html=True)
             st.button("Hapus / Ganti Gambar", on_click=clear_image)
             st.markdown("<br>", unsafe_allow_html=True)
@@ -377,16 +377,14 @@ if "Klasifikasi" in menu:
                         lama_proses = waktu_selesai - waktu_mulai
 
                         # 2. Proses Grad-CAM (Heatmap) 
-                        # Targetkan layer konvolusi terakhir EfficientNet dengan indeks [0]
                         target_layers = [model.features[-1][0]]
-                        cam = GradCAM(model=model, target_layers=target_layers)
                         targets = [ClassifierOutputTarget(pred_idx.item())]
                         
-                        # Generate heatmap dengan tambahan parameter penghalus (smooth)
-                        grayscale_cam = cam(input_tensor=img_tensor, 
-                                            targets=targets,
-                                            aug_smooth=True,
-                                            eigen_smooth=True)[0, :]
+                        with GradCAM(model=model, target_layers=target_layers) as cam:
+                            grayscale_cam = cam(input_tensor=img_tensor, 
+                                                targets=targets,
+                                                aug_smooth=False,
+                                                eigen_smooth=True)[0, :]
                         
                         # Gabungkan gambar asli dengan heatmap
                         img_resized = st.session_state["saved_image"].resize((640, 640))
@@ -442,7 +440,7 @@ if "Klasifikasi" in menu:
             
             # --- TAMPILKAN HEATMAP GRAD-CAM ---
             if "heatmap_img" in st.session_state:
-                st.image(st.session_state["heatmap_img"], caption="🔥 Explainable AI (Heatmap Grad-CAM)", use_column_width=True)
+                st.image(st.session_state["heatmap_img"], caption="🔥 Explainable AI (Heatmap Grad-CAM)", width="stretch")
             
             col_m1, col_m2 = st.columns(2)
             col_m1.metric(label="Tingkat Keyakinan", value=f"{conf:.2f}%")
@@ -622,7 +620,7 @@ elif "Ketentuan" in menu:
         
         try:
             img_benar = Image.open("benar.jpg")
-            st.image(img_benar, caption="✅ Contoh Pengambilan Gambar yang Benar", use_column_width=True)
+            st.image(img_benar, caption="✅ Contoh Pengambilan Gambar yang Benar", width="stretch")
         except FileNotFoundError:
             st.info("⚠️ File 'benar.jpg' belum tersedia di direktori web Anda.")
 
@@ -642,6 +640,6 @@ elif "Ketentuan" in menu:
         # --- Kode yang ditambahkan untuk gambar salah.jpg ---
         try:
             img_salah = Image.open("salah.jpg")
-            st.image(img_salah, caption="❌ Contoh Pengambilan Gambar yang Salah", use_column_width=True)
+            st.image(img_salah, caption="❌ Contoh Pengambilan Gambar yang Salah", width="stretch")
         except FileNotFoundError:
             st.info("⚠️ File 'salah.jpg' belum tersedia di direktori web Anda.")
